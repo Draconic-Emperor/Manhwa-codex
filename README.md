@@ -14,4 +14,5 @@ Built for readers who don’t just follow the story — they map it.
 Quick start
 npm install
 cp .env.example .env   # add your Supabase keys
+cp .env.example .env   # add your Supabase keys
 npm run dev
