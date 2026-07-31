@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Home, BookOpen, Users, Lightbulb, Clock, Trophy, BookmarkIcon,
-  HelpCircle, LogOut, LogIn, Search,
+  HelpCircle, LogOut, LogIn, Search, X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -16,20 +16,53 @@ const NAV_ITEMS = [
   { id: 'about', label: 'About Codex', icon: HelpCircle },
 ];
 
-export function Sidebar({ view, onNavigate, onOpenSearch, onOpenAuth }) {
+export function Sidebar({
+  view,
+  onNavigate,
+  onOpenSearch,
+  onOpenAuth,
+  collapsed = false,
+  mobileOpen = false,
+  onCloseMobile,
+}) {
   const { user, signOut } = useAuth();
 
   return (
-    <aside className="sidebar">
+    <aside
+      className={`sidebar ${collapsed ? 'is-collapsed' : ''} ${mobileOpen ? 'is-mobile-open' : ''}`}
+    >
       <div className="logo">
-        <h2>CODEX</h2>
-        <p>Of the Webtoon Realms</p>
+        <div className="logo-row">
+          <div>
+            <h2>CODEX</h2>
+            {!collapsed && <p>Of the Webtoon Realms</p>}
+          </div>
+          {onCloseMobile && (
+            <button
+              type="button"
+              className="icon-btn sidebar-close-mobile"
+              onClick={onCloseMobile}
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <button className="global-search-trigger" onClick={onOpenSearch} type="button">
+      <button
+        className="global-search-trigger"
+        onClick={onOpenSearch}
+        type="button"
+        title="Search everything"
+      >
         <Search size={16} />
-        <span>Search everything</span>
-        <kbd>⌘K</kbd>
+        {!collapsed && (
+          <>
+            <span>Search everything</span>
+            <kbd>⌘K</kbd>
+          </>
+        )}
       </button>
 
       <nav className="nav-menu" aria-label="Main navigation">
@@ -43,11 +76,16 @@ export function Sidebar({ view, onNavigate, onOpenSearch, onOpenAuth }) {
             }}
             aria-current={view === id ? 'page' : undefined}
             aria-disabled={comingSoon || undefined}
-            title={comingSoon ? 'Coming soon' : undefined}
+            title={label}
             type="button"
           >
-            <Icon size={20} aria-hidden="true" /> {label.toUpperCase()}
-            {comingSoon && <span className="badge">soon</span>}
+            <Icon size={20} aria-hidden="true" />
+            {!collapsed && (
+              <>
+                {label.toUpperCase()}
+                {comingSoon && <span className="badge">soon</span>}
+              </>
+            )}
           </button>
         ))}
       </nav>
@@ -55,16 +93,29 @@ export function Sidebar({ view, onNavigate, onOpenSearch, onOpenAuth }) {
       <div className="sidebar-footer">
         {user ? (
           <>
-            <div className="user-info">
-              <small>{user.email}</small>
-            </div>
-            <button className="icon-btn" onClick={signOut} title="Sign Out" type="button">
+            {!collapsed && (
+              <div className="user-info">
+                <small>{user.email}</small>
+              </div>
+            )}
+            <button
+              className="icon-btn"
+              onClick={signOut}
+              title="Sign Out"
+              type="button"
+            >
               <LogOut size={20} />
             </button>
           </>
         ) : (
-          <button className="btn-secondary w-full" onClick={onOpenAuth} type="button">
-            <LogIn size={16} /> Sign In
+          <button
+            className={`btn-secondary ${collapsed ? '' : 'w-full'}`}
+            onClick={onOpenAuth}
+            type="button"
+            title="Sign In"
+          >
+            <LogIn size={16} />
+            {!collapsed && ' Sign In'}
           </button>
         )}
       </div>
