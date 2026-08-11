@@ -66,7 +66,7 @@ export function HomeView({ manhwaList, characterList, insightList, charactersOf,
           <div className="hero-content fade-in-key" key={hero.id}>
             {hero.cover_image && (
               <div className="hero-cover">
-                <img src={hero.cover_image} alt="" />
+                <img src={hero.cover_image} alt={hero.title || 'Featured series cover'} loading="lazy" />
               </div>
             )}
             <h1>{hero.title}</h1>
@@ -243,4 +243,3 @@ function MetricCard({ label, value }) {
     </div>
   );
 }
-
