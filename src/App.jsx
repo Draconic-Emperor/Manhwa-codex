@@ -52,7 +52,22 @@ function ManhwaCodexApp() {
     if (target === 'manhwa') setSelectedManhwaId(id);
     if (target === 'character') setSelectedCharacterId(id);
     setView(target);
-    document.getElementById('main-content')?.scrollTo?.({ top: 0, behavior: 'smooth' });
+
+    // Scroll to top and focus the first heading after the view updates
+    requestAnimationFrame(() => {
+      const main = document.getElementById('main-content');
+      if (main) {
+        main.scrollTo({ top: 0, behavior: 'smooth' });
+        const heading = main.querySelector('h1, h2, h3');
+        if (heading) {
+          heading.setAttribute('tabindex', '-1');
+          heading.focus({ preventScroll: true });
+        } else {
+          main.setAttribute('tabindex', '-1');
+          main.focus({ preventScroll: true });
+        }
+      }
+    });
   }
 
   async function handleSaveManhwa(formData) {
@@ -224,6 +239,7 @@ function ManhwaCodexApp() {
         <Modal
           title={editingManhwa ? 'Edit Manhwa' : 'Add New Manhwa'}
           onClose={() => { setShowManhwaForm(false); setEditingManhwa(null); setFormError(''); }}
+          wide
         >
           <ManhwaForm
             initial={editingManhwa}
