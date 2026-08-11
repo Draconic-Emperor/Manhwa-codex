@@ -78,7 +78,7 @@ export function ImageUploader({ label = 'Image', value, onChange, folder = 'cove
 
       {value ? (
         <div className="image-uploader-preview">
-          <img src={value} alt="Preview" />
+          <img src={value} alt={`${label} preview`} loading="lazy" />
           <button
             type="button"
             className="image-uploader-remove"
