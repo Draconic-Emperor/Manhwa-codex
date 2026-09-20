@@ -16,7 +16,7 @@ export function SearchFilterBar({
   showGenre = true,
   sortBy,
   onSortChange,
-  placeholder = 'Search...',
+  placeholder = 'Query the Archive...',
 }) {
   return (
     <div className="search-filter-bar" role="search">
@@ -26,17 +26,17 @@ export function SearchFilterBar({
           type="text"
           className="codex-input"
           value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => onSearchChange?.(e.target.value)}
           placeholder={placeholder}
-          aria-label="Search"
+          aria-label="Search archive records"
         />
       </div>
 
       {showGenre && (
         <select
           className="codex-input"
-          value={genre}
-          onChange={(e) => onGenreChange(e.target.value)}
+          value={genre || ''}
+          onChange={(e) => onGenreChange?.(e.target.value)}
           aria-label="Filter by genre"
         >
           <option value="">All Genres</option>
@@ -50,8 +50,8 @@ export function SearchFilterBar({
 
       <select
         className="codex-input"
-        value={rank}
-        onChange={(e) => onRankChange(e.target.value)}
+        value={rank || ''}
+        onChange={(e) => onRankChange?.(e.target.value)}
         aria-label="Filter by rank"
       >
         <option value="">All Ranks</option>
@@ -65,8 +65,8 @@ export function SearchFilterBar({
       {showStatus && (
         <select
           className="codex-input"
-          value={status}
-          onChange={(e) => onStatusChange(e.target.value)}
+          value={status || ''}
+          onChange={(e) => onStatusChange?.(e.target.value)}
           aria-label="Filter by status"
         >
           <option value="">All Statuses</option>
@@ -81,8 +81,8 @@ export function SearchFilterBar({
       <select
         className="codex-input"
         value={sortBy}
-        onChange={(e) => onSortChange(e.target.value)}
-        aria-label="Sort"
+        onChange={(e) => onSortChange?.(e.target.value)}
+        aria-label="Sort results"
       >
         {SORT_OPTIONS.map((s) => (
           <option key={s.id} value={s.id}>

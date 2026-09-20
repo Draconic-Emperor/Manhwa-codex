@@ -1,27 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { BookOpen, Users, Lightbulb, Plus, Shuffle, Heart, Trophy } from 'lucide-react';
-import { SectionHeader } from '../../components/layout/SectionHeader';
-import { ManhwaCard } from '../../components/cards/ManhwaCard';
-import { CharacterCard } from '../../components/cards/CharacterCard';
-import { InsightCard } from '../../components/cards/InsightCard';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { AnimatedCounter } from '../../components/ui/AnimatedCounter';
-import { ScrollReveal } from '../../components/ui/Skeleton';
-import { rankWeight, sortItems } from '../../utils/format';
-import { useFavorites } from '../../hooks/useFavorites';
+import React, { useMemo } from 'react';
+import { BookOpen } from 'lucide-react';
 
 const HERO_ROTATE_MS = 10000;
 
 export function HomeView({ manhwaList, characterList, insightList, charactersOf, onNavigate, onAddManhwa }) {
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const heroSlides = useMemo(() => [...manhwaList].sort((a, b) => Number(b.rank ?? 0) - Number(a.rank ?? 0)).slice(0, 5), [manhwaList]);
+  const [heroIndex, setHeroIndex] = React.useState(0);
 
-  const heroSlides = useMemo(
-    () => sortItems(manhwaList, 'rank').slice(0, 5),
-    [manhwaList]
-  );
-  const [heroIndex, setHeroIndex] = useState(0);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (heroSlides.length < 2) return;
     const timer = setInterval(() => {
       setHeroIndex((i) => (i + 1) % heroSlides.length);
@@ -29,60 +15,51 @@ export function HomeView({ manhwaList, characterList, insightList, charactersOf,
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (heroIndex >= heroSlides.length) setHeroIndex(0);
-  }, [heroSlides.length, heroIndex]);
+  }, [heroIndex, heroSlides.length]);
 
   const hero = heroSlides[heroIndex];
-
-  const recentlyAdded = useMemo(() => sortItems(manhwaList, 'newest').slice(0, 4), [manhwaList]);
-  const topCharacters = useMemo(() => sortItems(characterList, 'rank').slice(0, 4), [characterList]);
-  const latestInsights = useMemo(() => insightList.slice(0, 4), [insightList]);
-
+  const recentlyAdded = useMemo(() => [...manhwaList].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 4), [manhwaList]);
+  const topCharacters = useMemo(() => [...characterList].sort((a, b) => Number(b.rank ?? 0) - Number(a.rank ?? 0)).slice(0, 4), [characterList]);
+  const latestInsights = useMemo(() => [...insightList].slice(0, 4), [insightList]);
   const spotlightCharacter = useMemo(() => {
-    if (characterList.length === 0) return null;
+    if (!characterList.length) return null;
     return characterList[Math.floor(Math.random() * characterList.length)];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // stable per page load - "random character every refresh"
+  }, [characterList]);
 
   const newThisWeek = useMemo(() => {
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return [...manhwaList, ...characterList].filter(
-      (item) => item.created_at && new Date(item.created_at).getTime() >= weekAgo
+      (item) => item.created_at && new Date(item.created_at).getTime() >= oneWeekAgo
     ).length;
   }, [manhwaList, characterList]);
 
-  const topRankCharacter = useMemo(() => {
-    if (characterList.length === 0) return null;
-    return [...characterList].sort((a, b) => rankWeight(b.rank) - rankWeight(a.rank))[0];
-  }, [characterList]);
-
-  const favoriteManhwa = manhwaList.filter((m) => favorites.manhwa?.includes(m.id));
+  const favoriteManhwa = manhwaList.filter((m) => m.isFavorite === true);
 
   return (
-    <div className="view-container">
+    <div className="view-container archive-view">
       {hero ? (
-        <div className="hero-banner" key={hero.id}>
+        <section className="hero-banner" key={hero.id}>
+          <div className="hero-overlay" />
+          {hero.cover_image && <div className="hero-art" style={{ backgroundImage: `url(${hero.cover_image})` }} />}
           <div className="hero-content fade-in-key" key={hero.id}>
-            {hero.cover_image && (
-              <div className="hero-cover">
-                <img src={hero.cover_image} alt={hero.title || 'Featured series cover'} loading="lazy" />
-              </div>
-            )}
-            <h1>{hero.title}</h1>
+            <p className="eyebrow">Classified record</p>
+            <h1>MANHWA CONSOLE</h1>
+            <h2>{hero.title}</h2>
             <p className="hero-subtitle">
-              {hero.description?.slice(0, 140) || 'A living archive of manhwa series, characters, and lore.'}
+              {hero.description?.slice(0, 160) || 'A hidden archive containing worlds, lore, factions, and ancient conflicts.'}
             </p>
             <div className="hero-meta">
               {hero.status && <span className="status-pill">{hero.status.toUpperCase()}</span>}
-              <span className="genre-pill">{charactersOf(hero.id).length} characters</span>
+              <span className="genre-pill">{charactersOf(hero.id).length} recorded entities</span>
             </div>
             <div className="hero-actions">
-              <button className="action-btn" onClick={() => onNavigate('manhwa', hero.id)}>
-                <BookOpen size={18} /> Read Lore
+              <button className="btn btn-primary" onClick={() => onNavigate('manhwa', hero.id)}>
+                ENTER THE ARCHIVE
               </button>
-              <button className="action-btn" onClick={() => onNavigate('manhwa', hero.id)}>
-                <Users size={18} /> View Characters
+              <button className="btn btn-secondary" onClick={() => onNavigate('insights')}>
+                EXPLORE CHRONICLES
               </button>
             </div>
             {heroSlides.length > 1 && (
@@ -100,146 +77,154 @@ export function HomeView({ manhwaList, characterList, insightList, charactersOf,
               </div>
             )}
           </div>
-        </div>
+        </section>
       ) : (
-        <EmptyState
-          icon={BookOpen}
-          title="Your codex is empty"
-          subtitle="Add your first series to start building the archive."
-          actionLabel="Add Series"
-          onAction={onAddManhwa}
-        />
+        <div className="empty-state archive-empty">
+          <BookOpen size={42} aria-hidden="true" />
+          <h3>The archive is empty</h3>
+          <p>Add the first record to begin cataloging hidden worlds.</p>
+          <button className="btn btn-primary" onClick={onAddManhwa} type="button">Add Series</button>
+        </div>
       )}
 
       <div className="dashboard-metrics">
-        <MetricCard label="Total Series" value={manhwaList.length} />
-        <MetricCard label="Total Characters" value={characterList.length} />
-        <MetricCard label="Total Insights" value={insightList.length} />
-        <MetricCard label="New This Week" value={newThisWeek} />
-        <div className="metric-card metric-card-text">
-          <div className="metric-label">Top Ranked Character</div>
-          <div className="metric-text-value">{topRankCharacter?.name || '—'}</div>
+        <div className="metric-card">
+          <div className="metric-value">{manhwaList.length}</div>
+          <div className="metric-label">Recorded Series</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{characterList.length}</div>
+          <div className="metric-label">Entities</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{insightList.length}</div>
+          <div className="metric-label">Chronicles</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{newThisWeek}</div>
+          <div className="metric-label">New This Week</div>
         </div>
       </div>
 
       <div className="action-bar">
-        <button className="action-btn" onClick={onAddManhwa}>
-          <Plus size={20} /> Add Series
-        </button>
+        <button className="btn btn-primary" onClick={onAddManhwa} type="button">Add Series</button>
+        <button className="btn btn-secondary" onClick={() => onNavigate('characters')} type="button">View Entities</button>
       </div>
 
-      <ScrollReveal>
-        <SectionHeader
-          icon={BookOpen}
-          title="Recently Added Series"
-          actionLabel="View All"
-          onAction={() => onNavigate('series')}
-        />
-        <div className="cards-grid">
-          {recentlyAdded.length > 0 ? (
-            recentlyAdded.map((m) => (
-              <ManhwaCard
-                key={m.id}
-                manhwa={m}
-                characterCount={charactersOf(m.id).length}
-                onClick={() => onNavigate('manhwa', m.id)}
-                isFavorite={isFavorite('manhwa', m.id)}
-                onToggleFavorite={() => toggleFavorite('manhwa', m.id)}
-              />
-            ))
-          ) : (
-            <EmptyState icon={BookOpen} title="No series recorded yet." />
-          )}
+      <section className="archive-section">
+        <div className="section-header">
+          <div className="header-left">
+            <BookOpen size={22} aria-hidden="true" />
+            <h2>Recent Records</h2>
+          </div>
+          <button type="button" className="view-all" onClick={() => onNavigate('series')}>View archives</button>
         </div>
-      </ScrollReveal>
+        <div className="cards-grid">
+          {recentlyAdded.map((m) => (
+            <div key={m.id} className="card manhwa-card" role="button" tabIndex={0} onClick={() => onNavigate('manhwa', m.id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onNavigate('manhwa', m.id)}>
+              <div className="card-cover">
+                {m.cover_image ? <img src={m.cover_image} alt={m.title} className="cover-image" loading="lazy" /> : <div className="card-fallback" />}
+              </div>
+              <div className="card-body">
+                <h3>{m.title}</h3>
+                <p className="text-sm">{m.author}</p>
+                {m.status && <span className="status-pill">{m.status.toUpperCase()}</span>}
+                <div className="card-footer">
+                  <small>{charactersOf(m.id).length} entities</small>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <ScrollReveal>
-        <SectionHeader
-          icon={Trophy}
-          title="Highest Ranked Characters"
-          actionLabel="View All"
-          onAction={() => onNavigate('characters')}
-        />
-        <div className="cards-grid">
-          {topCharacters.length > 0 ? (
-            topCharacters.map((c) => (
-              <CharacterCard
-                key={c.id}
-                character={c}
-                onClick={() => onNavigate('character', c.id)}
-                isFavorite={isFavorite('character', c.id)}
-                onToggleFavorite={() => toggleFavorite('character', c.id)}
-              />
-            ))
-          ) : (
-            <EmptyState icon={Users} title="No characters recorded yet." />
-          )}
+      <section className="archive-section">
+        <div className="section-header">
+          <div className="header-left">
+            <span className="section-icon">✦</span>
+            <h2>Notable Entities</h2>
+          </div>
+          <button type="button" className="view-all" onClick={() => onNavigate('characters')}>View all</button>
         </div>
-      </ScrollReveal>
+        <div className="cards-grid">
+          {topCharacters.map((c) => (
+            <div key={c.id} className="card character-card" role="button" tabIndex={0} onClick={() => onNavigate('character', c.id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onNavigate('character', c.id)}>
+              <div className="card-cover">
+                {c.image_url ? <img src={c.image_url} alt={c.name} className="cover-image" loading="lazy" /> : <div className="card-fallback card-fallback-gold" />}
+              </div>
+              <div className="card-body">
+                <h3>{c.name}</h3>
+                {c.role && <p className="text-sm">{c.role}</p>}
+                <span className="status-pill alt">RANK {c.rank || 'N/A'}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {spotlightCharacter && (
-        <ScrollReveal>
-          <SectionHeader icon={Shuffle} title="Character Spotlight" />
-          <div className="spotlight-card" onClick={() => onNavigate('character', spotlightCharacter.id)}>
-            <img
-              src={spotlightCharacter.image_url || 'https://placehold.co/160x160'}
-              alt={spotlightCharacter.name}
-            />
-            <div>
-              <h3>{spotlightCharacter.name}</h3>
-              <p className="text-sm">{spotlightCharacter.role}</p>
-              {spotlightCharacter.description && (
-                <p className="text-sm spotlight-desc">{spotlightCharacter.description.slice(0, 140)}</p>
-              )}
+        <section className="archive-section">
+          <div className="section-header">
+            <div className="header-left">
+              <span className="section-icon">✧</span>
+              <h2>Entity Spotlight</h2>
             </div>
           </div>
-        </ScrollReveal>
+          <div className="spotlight-card" onClick={() => onNavigate('character', spotlightCharacter.id)} role="button" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onNavigate('character', spotlightCharacter.id)}>
+            <img src={spotlightCharacter.image_url || '/hero.webp'} alt={spotlightCharacter.name} />
+            <div>
+              <p className="eyebrow">Known entity</p>
+              <h3>{spotlightCharacter.name}</h3>
+              <p className="text-sm">{spotlightCharacter.role}</p>
+              {spotlightCharacter.description && <p className="spotlight-desc">{spotlightCharacter.description.slice(0, 180)}</p>}
+            </div>
+          </div>
+        </section>
       )}
 
-      <ScrollReveal>
-        <SectionHeader
-          icon={Lightbulb}
-          title="Latest Insights"
-          actionLabel="View All"
-          onAction={() => onNavigate('insights')}
-        />
-        <div className="cards-grid">
-          {latestInsights.length > 0 ? (
-            latestInsights.map((insight) => <InsightCard key={insight.id} insight={insight} />)
-          ) : (
-            <EmptyState icon={Lightbulb} title="No insights shared yet." />
-          )}
+      <section className="archive-section">
+        <div className="section-header">
+          <div className="header-left">
+            <span className="section-icon">✦</span>
+            <h2>Latest Chronicles</h2>
+          </div>
+          <button type="button" className="view-all" onClick={() => onNavigate('insights')}>Read all</button>
         </div>
-      </ScrollReveal>
+        <div className="cards-grid">
+          {latestInsights.map((insight) => (
+            <div key={insight.id} className="card insight-card">
+              <div className="card-body">
+                <span className="insight-tag">{insight.type || 'Chronicle'}</span>
+                <p>{insight.text?.slice(0, 120) || 'Hidden chronicle entry'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {favoriteManhwa.length > 0 && (
-        <ScrollReveal>
-          <SectionHeader icon={Heart} title="Your Favorites" />
+        <section className="archive-section">
+          <div className="section-header">
+            <div className="header-left">
+              <span className="section-icon">♥</span>
+              <h2>Saved to the Vault</h2>
+            </div>
+          </div>
           <div className="cards-grid">
             {favoriteManhwa.map((m) => (
-              <ManhwaCard
-                key={m.id}
-                manhwa={m}
-                characterCount={charactersOf(m.id).length}
-                onClick={() => onNavigate('manhwa', m.id)}
-                isFavorite
-                onToggleFavorite={() => toggleFavorite('manhwa', m.id)}
-              />
+              <div key={m.id} className="card manhwa-card" role="button" tabIndex={0} onClick={() => onNavigate('manhwa', m.id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onNavigate('manhwa', m.id)}>
+                <div className="card-cover">
+                  {m.cover_image ? <img src={m.cover_image} alt={m.title} className="cover-image" loading="lazy" /> : <div className="card-fallback" />}
+                </div>
+                <div className="card-body">
+                  <h3>{m.title}</h3>
+                  <p className="text-sm">{m.author}</p>
+                </div>
+              </div>
             ))}
           </div>
-        </ScrollReveal>
+        </section>
       )}
-    </div>
-  );
-}
-
-function MetricCard({ label, value }) {
-  return (
-    <div className="metric-card">
-      <div className="metric-value">
-        <AnimatedCounter value={value} />
-      </div>
-      <div className="metric-label">{label}</div>
     </div>
   );
 }

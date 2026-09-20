@@ -6,14 +6,14 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_ITEMS = [
-  { id: 'home', label: 'Home', icon: Home },
+  { id: 'home', label: 'Archive', icon: Home },
   { id: 'series', label: 'Series', icon: BookOpen },
-  { id: 'characters', label: 'Characters', icon: Users },
-  { id: 'insights', label: 'Insights', icon: Lightbulb },
+  { id: 'characters', label: 'Entities', icon: Users },
+  { id: 'insights', label: 'Chronicles', icon: Lightbulb },
   { id: 'rankings', label: 'Rankings', icon: Trophy },
-  { id: 'timeline', label: 'Timeline', icon: Clock, comingSoon: true },
+  { id: 'timeline', label: 'Archive Notes', icon: Clock, comingSoon: true },
   { id: 'collections', label: 'Collections', icon: BookmarkIcon },
-  { id: 'about', label: 'About Codex', icon: HelpCircle },
+  { id: 'about', label: 'About', icon: HelpCircle },
 ];
 
 export function Sidebar({
@@ -33,9 +33,10 @@ export function Sidebar({
     >
       <div className="logo">
         <div className="logo-row">
+          <div className="logo-mark" aria-hidden="true">M</div>
           <div>
-            <h2>CODEX</h2>
-            {!collapsed && <p>Of the Webtoon Realms</p>}
+            <h2>MANHWA CONSOLE</h2>
+            {!collapsed && <p>Forbidden Archive</p>}
           </div>
           {onCloseMobile && (
             <button
@@ -54,12 +55,12 @@ export function Sidebar({
         className="global-search-trigger"
         onClick={onOpenSearch}
         type="button"
-        title="Search everything"
+        title="Query the Archive"
       >
         <Search size={16} />
         {!collapsed && (
           <>
-            <span>Search everything</span>
+            <span>Query the Archive</span>
             <kbd>⌘K</kbd>
           </>
         )}

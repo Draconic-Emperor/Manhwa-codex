@@ -35,24 +35,32 @@ export function GlobalSearchModal({ onClose, onNavigate }) {
         aria-modal="true"
         aria-label="Global search"
       >
+        <div className="modal-header search-modal-header">
+          <div>
+            <p className="eyebrow">Query the archive</p>
+            <h2>Forbidden Records</h2>
+          </div>
+          <button className="close-btn" onClick={onClose} aria-label="Close archive search" type="button">✕</button>
+        </div>
         <div className="modal-body">
           <input
             autoFocus
             type="text"
             className="codex-input w-full global-search-input"
-            placeholder="Search series, characters, insights..."
+            placeholder="Search Forbidden Records..."
             value={term}
             onChange={(e) => setTerm(e.target.value)}
           />
 
-          {term && !hasResults && <p className="text-sm">No matches yet — keep typing.</p>}
+          {term && !hasResults && <p className="search-empty">No matches in the archive — keep searching.</p>}
 
           {results.manhwa.length > 0 && (
             <div className="global-search-group">
               <h4><BookOpen size={14} /> Series</h4>
               {results.manhwa.map((m) => (
                 <button key={m.id} className="global-search-result" onClick={() => onNavigate('manhwa', m.id)}>
-                  {m.title}
+                  <span>{m.title}</span>
+                  <small>Entry</small>
                 </button>
               ))}
             </div>
@@ -60,10 +68,11 @@ export function GlobalSearchModal({ onClose, onNavigate }) {
 
           {results.characters.length > 0 && (
             <div className="global-search-group">
-              <h4><Users size={14} /> Characters</h4>
+              <h4><Users size={14} /> Entities</h4>
               {results.characters.map((c) => (
                 <button key={c.id} className="global-search-result" onClick={() => onNavigate('character', c.id)}>
-                  {c.name}
+                  <span>{c.name}</span>
+                  <small>Entity Record</small>
                 </button>
               ))}
             </div>
@@ -71,10 +80,11 @@ export function GlobalSearchModal({ onClose, onNavigate }) {
 
           {results.insights.length > 0 && (
             <div className="global-search-group">
-              <h4><Lightbulb size={14} /> Insights</h4>
+              <h4><Lightbulb size={14} /> Chronicles</h4>
               {results.insights.map((i) => (
                 <div key={i.id} className="global-search-result global-search-result-static">
-                  {i.text?.slice(0, 90)}
+                  <span>{i.text?.slice(0, 90)}</span>
+                  <small>Witness account</small>
                 </div>
               ))}
             </div>
